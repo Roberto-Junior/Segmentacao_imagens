@@ -1,45 +1,34 @@
 import java.util.*;
 
 void setup() {
-  size(400, 300);
+  size(400, 272);
   noLoop();
 }
 
 void draw() {
-  PImage img = loadImage("C:/Users/Roberto/OneDrive/Documentos/Github/Segmentacao_imagens/dataset/placas/0_0_735.jpg");
-  PImage img_segmented = loadImage("C:/Users/Roberto/OneDrive/Documentos/Github/Segmentacao_imagens/dataset/placas/0_0_735.png");
+  PImage img = loadImage("C:/Users/Roberto/OneDrive/Documentos/Github/Segmentacao_imagens/dataset/placas/142131.jpg");
+  PImage img_segmented = loadImage("C:/Users/Roberto/OneDrive/Documentos/Github/Segmentacao_imagens/dataset/placas/142131.png");
   PImage aux = createImage(img.width, img.height, RGB);
-  PImage aux_placa = createImage(img.width, img.height, RGB);
-  PImage aux_ceu = createImage(img.width, img.height, RGB);
-  String cinza_RGB = "R"; //colocar aqui as cores que vai usar na escala de cinza respeita a sequencia RGB
-  //EX: usar somente o vermelho: String cinza_RGB = "R";
-  //EX: usar vermelho e azul: String cinza_RGB = "RB";
-  //EX: usar vermelhO, verde e azul: String cinza_RGB = "RGB";
+  String cinza_RGB = "R";
 
   image(img, 0, 0);
   save("resultados/1-original.jpg");
 
   //-----------Processamento das imagens--------------------//
-  //aux_placa = aplicar_sequencia_filtros(img, aux, "RG", 1.0361, "Placa");
-  aux_placa = aplicar_sequencia_filtros(img, aux, "RG", 1.038502, 6, "Placa");
-  aux_ceu = aplicar_sequencia_filtros(img, aux, "B", 1.01, 6, "Ceu");
+  aux = aplicar_sequencia_filtros(img, aux, cinza_RGB, 1, 1, "Placa", 165);
 
-  //-----------Remover partes de uma imagem da outra--------------------//
-  aux = aplicar_norX_e_manter_Y(img, aux_placa, aux_ceu);
-  image(aux, 0, 0);
-  save("resultados/6-color" + cinza_RGB + "-somente-placa.jpg");
-
-  //-----------Calcular acurácia--------------------//
-  calcular_acuracia(img, img_segmented, aux);
+  //-----------Calcular métricas--------------------//
+  calcular_metricas(img, img_segmented, aux);
 
   //-----------Mostrar imagem final--------------------//
   aux = show_final_image(img, aux);
   image(aux, 0, 0);
-  save("resultados/7-color" + cinza_RGB + "-imagem_final.jpg");
+  save("resultados/5-color" + cinza_RGB + "-imagem_final.jpg");
 }
-//--------------FUNÇÕES-----------
 
-PImage aplicar_sequencia_filtros(PImage img, PImage aux, String cinza_RGB, float paramGauss, int times_to_apply_gauss, String folder_save_images) {
+//--------------Pipeline-----------
+
+PImage aplicar_sequencia_filtros(PImage img, PImage aux, String cinza_RGB, float paramGauss, int times_to_apply_gauss, String folder_save_images, int color_above) {
 
   //-----------Aplicar escala de cinza-----------------//
   aux = aplicar_escala_cinza(img, cinza_RGB);
@@ -47,27 +36,21 @@ PImage aplicar_sequencia_filtros(PImage img, PImage aux, String cinza_RGB, float
   save("resultados/" + folder_save_images + "/2-color" + cinza_RGB + "-escalaCinza.jpg");
 
   //-----------Aplicar filtro de Gauss-----------------//
-  //float paramGauss = 1.0361; //Kernel!
-  //int times_to_apply_gauss = 6; //quantidade de vezes para aplicar filtro de Gauss
   for (int x = 0; x < times_to_apply_gauss; x++) {
     aux = aplicar_filtro_gaussiano(paramGauss, img, aux);
-    image(aux, 0, 0);
-    save("resultados/" + folder_save_images + "/3." + x + "-color" + cinza_RGB + "-Gauss.jpg");
   }
-
-
-  //-----------Aplicar filtro de borda-----------------//
-  aux = aplicar_filtro_borda(img, aux);
   image(aux, 0, 0);
-  save("resultados/" + folder_save_images + "/4-color" + cinza_RGB + "-borda.jpg");
+  save("resultados/" + folder_save_images + "/3-color" + cinza_RGB + "-Gauss.jpg");
 
-  //-----------Pintar dentro das bordas-----------------//
-  aux = pintar_dentro_das_bordas(img, aux);
+  //-----------Aplicar filtro de limiarizacao-----------------//
+  aux = aplicar_filtro_limiarizacao_color_above(img, aux, color_above);
   image(aux, 0, 0);
-  save("resultados/" + folder_save_images + "/5-color" + cinza_RGB + "-pintar-borda.jpg");
+  save("resultados/" + folder_save_images + "/4-color" + cinza_RGB + "-limiarizacao.jpg");
 
   return aux;
 }
+
+//--------------FUNÇÕES-----------
 
 PImage pintar_dentro_das_bordas(PImage img, PImage aux) {
   PImage aux1 = createImage(img.width, img.height, RGB);
@@ -391,25 +374,25 @@ PImage aplicar_norX_e_manter_Y(PImage img, PImage img1, PImage img2) {
   return aux;
 }
 
-void calcular_acuracia(PImage img, PImage img_segmented, PImage aux) {
+void calcular_metricas(PImage img, PImage img_segmented, PImage aux) {
   float total_pixels = img_segmented.height * img_segmented.width;
   float pixels_corretos = 0.0;
   int falso_positivo = 0;
   int falso_negativo = 0;
-  
+
   for (int y = 0; y < img.height; y++) {
     for (int x = 0; x < img.width; x++) {
       int pos = y * img.width + x;
 
-      if ( (red(img_segmented.pixels[pos]) == red(aux.pixels[pos])) ) 
-        pixels_corretos++; 
-      else if( red(aux.pixels[pos]) == 255 &&  red(img_segmented.pixels[pos]) == 0)
+      if ( (red(img_segmented.pixels[pos]) == red(aux.pixels[pos])) )
+        pixels_corretos++;
+      else if ( red(aux.pixels[pos]) == 255 &&  red(img_segmented.pixels[pos]) == 0)
         falso_positivo++;
-      else if( red(aux.pixels[pos]) == 0 &&  red(img_segmented.pixels[pos]) == 255)
+      else if ( red(aux.pixels[pos]) == 0 &&  red(img_segmented.pixels[pos]) == 255)
         falso_negativo++;
     }
   }
-  
+
   //calcular acúracia
   float acuracia = (pixels_corretos/total_pixels)*100;
   println("Acurácia: " + acuracia + "%");
