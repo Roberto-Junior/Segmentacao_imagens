@@ -1,0 +1,5 @@
+http://mmcheng.net/msra10k/
+http://www.vision.ime.usp.br/~pmiranda/downloads.html
+http://www.vision.ime.usp.br/~pmiranda/downloads/COIFT/COIFT.html
+https://www.kaggle.com/datasets/yuzhenlu/plantsegdatasets
+https://github.com/GrassBro/SODdataset
