@@ -9,13 +9,12 @@ void draw() {
   PImage img = loadImage("C:/Users/Roberto/OneDrive/Documentos/Github/Segmentacao_imagens/dataset/placas/142131.jpg");
   PImage img_segmented = loadImage("C:/Users/Roberto/OneDrive/Documentos/Github/Segmentacao_imagens/dataset/placas/142131.png");
   PImage aux = createImage(img.width, img.height, RGB);
-  String cinza_RGB = "R";
 
   image(img, 0, 0);
   save("resultados/1-original.jpg");
 
   //-----------Processamento das imagens--------------------//
-  aux = aplicar_sequencia_filtros(img, aux, cinza_RGB, 1, 1, "Placa", 165);
+  aux = aplicar_sequencia_filtros(img, aux, "R", 1, 1, "Placa", 165);
 
   //-----------Calcular métricas--------------------//
   calcular_metricas(img, img_segmented, aux);
@@ -23,7 +22,7 @@ void draw() {
   //-----------Mostrar imagem final--------------------//
   aux = show_final_image(img, aux);
   image(aux, 0, 0);
-  save("resultados/5-color" + cinza_RGB + "-imagem_final.jpg");
+  save("resultados/5-imagem_final.jpg");
 }
 
 //--------------Pipeline-----------
@@ -40,7 +39,7 @@ PImage aplicar_sequencia_filtros(PImage img, PImage aux, String cinza_RGB, float
     aux = aplicar_filtro_gaussiano(paramGauss, img, aux);
   }
   image(aux, 0, 0);
-  save("resultados/" + folder_save_images + "/3-color" + cinza_RGB + "-Gauss.jpg");
+  save("resultados/" + folder_save_images + "/3-color" + cinza_RGB + "-Gauss_aplicado_" + times_to_apply_gauss + "x.jpg");
 
   //-----------Aplicar filtro de limiarizacao-----------------//
   aux = aplicar_filtro_limiarizacao_color_above(img, aux, color_above);
