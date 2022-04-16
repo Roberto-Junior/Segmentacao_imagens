@@ -15,7 +15,7 @@ void draw() {
   save("resultados/1-original.jpg");
 
   //-----------Processamento das imagens--------------------//
-  aux = aplicar_sequencia_filtros_borda(img, aux, "B", 1.2, 1, "Placa_borda"); //R e B=96 
+  aux = aplicar_sequencia_filtros_borda(img, aux, "B", 1.2, 1, "1-filtro_borda_cor_azul");
   
   //-----------Calcular métricas--------------------//
   calcular_metricas(img, img_segmented, aux);
@@ -23,7 +23,7 @@ void draw() {
   //-----------Mostrar imagem final--------------------//
   aux = show_final_image(img, aux);
   image(aux, 0, 0);
-  save("resultados/7-imagem_final.jpg");
+  save("resultados/6-imagem_final.jpg");
 }
 
 //--------------Pipeline-----------
@@ -40,8 +40,8 @@ PImage aplicar_sequencia_filtros_borda(PImage img, PImage aux, String cinza_RGB,
     aux = aplicar_filtro_gaussiano(paramGauss, img, aux);
   }
   image(aux, 0, 0);
-  save("resultados/" + folder_save_images + "/3-color" + cinza_RGB + "-Gauss.jpg");
-
+  save("resultados/" + folder_save_images + "/3-color" + cinza_RGB + "-Gauss_aplicado_" + times_to_apply_gauss + "x.jpg");
+  
   //-----------Aplicar filtro de borda-----------------//
   aux = aplicar_filtro_borda(img, aux);
   image(aux, 0, 0);
